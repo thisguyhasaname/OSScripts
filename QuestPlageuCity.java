@@ -343,7 +343,11 @@ public class QuestPlagueCity extends Script
         sleep(random(1800,2400));
         for (int i = 0; i < supplyID.length; i++) {
             grandExchange.buyItem(supplyID[i],supplyName[i],1000,supplyQuantity[i]);
+            sleep(random(1800,2400));
         }
+        grandExchange.collect();
+        sleep(random(1800,2400));
+
 
     }
     public boolean TalkandWait(String npc) throws InterruptedException
