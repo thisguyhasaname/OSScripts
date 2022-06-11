@@ -10,6 +10,10 @@ import java.util.function.BooleanSupplier;
 @ScriptManifest(name = "PlagueCity", author = "Iownreality1", info = "Smelts Cannon Balls", version = 0.1, logo = "")
 public class QuestPlagueCity extends Script
 {
+    int[] supplyID = {2126,954,952,1929,1927,1975,231};
+    String[] supplyName = {"Dwellberries", "Rope", "Spade", "bucket of water", "Bucket of milk", "Chocolate dust", "Snape grass"};
+    int[] supplyQuantity = {1, 1, 1, 1, 4, 1, 1};
+    private final Area GeArea = new Area(3159,3482,3168,3492);
     private final Area edmondArea = new Area(2563,3335,2570,3330);
     Area undergroundTunnel = new Area(2509,9765,2519,9738);
     Area Cellar = new Area(2536,9669,2542,9673);
@@ -34,6 +38,13 @@ public class QuestPlagueCity extends Script
 
         switch (plagueCityProg) {
             case 0:
+                if ((!inventory.contains("Dwellberries")) || (!inventory.contains("Rope"))
+                    || (!inventory.contains("Spade")) || (!inventory.contains("Bucket of milk"))
+                    || (!inventory.contains("Chocolate dust")) || (!inventory.contains("Snape grass"))
+                    || (!(inventory.getAmount("Bucket of water") < 4)))
+                {
+                    Supply();
+                }
                 log("Case 0");
                 getWalking().webWalk(edmondArea);
                 sleep(random(1800,2400));
@@ -319,19 +330,28 @@ public class QuestPlagueCity extends Script
         return random(1200, 1800);
 
     }
+    public void Supply() throws InterruptedException {
+        walking.webWalk(GeArea);
+        sleep(random(1800,2400));
+        npcs.closest("Banker").interact("Bank");
+        sleep(random(1800,2400));
+        bank.withdrawAll("Coins");
+        sleep(random(1800,2400));
+        bank.close();
+        sleep(random(1800,2400));
+        getObjects().closest("Grand Exchange Booth").interact("Exchange");
+        sleep(random(1800,2400));
+        for (int i = 0; i < supplyID.length; i++) {
+            grandExchange.buyItem(supplyID[i],supplyName[i],1000,supplyQuantity[i]);
+        }
+
+    }
     public boolean TalkandWait(String npc) throws InterruptedException
     {
         npcs.closest(npc).interact("Talk-to");
         Sleep3.sleepUntil(() -> dialogues.isPendingContinuation(), 6000);
 
-        if (dialogues.isPendingContinuation())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return dialogues.isPendingContinuation();
     }
 
 }
