@@ -2,6 +2,7 @@ import javafx.geometry.Pos;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.input.mouse.MainScreenTileDestination;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.ConditionalSleep;
@@ -41,7 +42,7 @@ public final class GiantsFoundryNew extends Script
     Position polishingWheel = new Position(3365, 11485, 0);
     int greenDescending = 200;
     int greenAscending = 158;
-    int yellowDescending = 242;
+    int yellowDescending = 250;
     int yellowAscending = 185;
     int redDescending = 486;
     int redAscending = 450;
@@ -55,6 +56,10 @@ public final class GiantsFoundryNew extends Script
         setWidgets();
         if(currentlMakingSword)
         {
+            log("WE ARE MAKING A SWORD");
+            log("CURRENT PROGRESS IS: " + progress);
+            log("CURRENT HEAT IS: " + currentHeat);
+            log("CURRENT COLOR IS: " + progFourColor);
             findProgress();
             findHeat();
             if (progress == 1)
@@ -185,12 +190,10 @@ public final class GiantsFoundryNew extends Script
                         log("Waiting for heat to be outside of yellow");
                         sleep(random(100,250));
                     }
-                    interactingSecond = false;
-
                 }
                 else if (progTwoColor.equals(green))
                 {
-
+                    smithGreen(progress);
                 }
             }
             else if (progress == 3)
@@ -316,66 +319,73 @@ public final class GiantsFoundryNew extends Script
                     }
                     interactingSecond = false;
                 }
-                }
             }
             else if (progress == 4)
             {
+
                 if (progFourColor.equals(red))
                 {
 
                 }
                 else if (progFourColor.equals(yellow))
                 {
-                    while (redAscending > arrowPosition) // if heat is low heat it up
+                    while (yellowDescending < arrowPosition)
                     {
                         findHeat();
-                        while (!lavaPool.contains(myPosition()))
+                        while(!waterFall2.contains(myPosition()))
                         {
-                            log("Walking to lavapool");
-                            walking.walk(objects.closest("Lava pool"));
+                            log("Starting walk to waterfall");
+                            walking.walk(objects.closest("Waterfall"));
                             sleep(random(400,600));
                         }
                         if (interactingFirst == false)
                         {
-                            log("Interacting with lava pool");
+                            log("Interacting with waterfall");
+                            objects.closest("Waterfall").interact("Cool-preform");
+                            interactingFirst = true;
+                        }
+                        sleep(random(100,250));
+                        log("End of yellow Descending < arrowposition loop");
+                    }
+                    interactingFirst = false;
+                    if(!grindStone.equals(myPosition()))
+                    {
+                        log("Walking to grindstone");
+                        walking.walk(objects.closest("Grindstone"));
+                        findHeat();
+                    }
+                    while(currentHeat < 4)
+                    {
+                        findHeat();
+                        if(!interactingFirst)
+                        {
+                            walking.walk(objects.closest("Lava pool"));
+                            sleep(random(250, 400));
                             objects.closest("Lava pool").interact("Heat-preform");
                             interactingFirst = true;
                         }
-                        sleep(random(100,200));
-                        log("End of redAscending > arrowPosition loop");
                     }
                     interactingFirst = false;
-                    if (!tripHammer.equals(myPosition()))
+                    while (currentHeat == 4 && progress == 4)
                     {
-                        log("Walking to Trip hammer");
-                        walking.walk(objects.closest("Trip hammer"));
-                        findHeat();
-                    }
-                    while(currentHeat == 7)
-                    {
-                        findHeat();
-                        log("Waiting for heat to lower");
-                        log("currentHeat: " + currentHeat);
-                        sleep(random(100,250));
-                    }
-                    while (currentHeat == 6 && progress == 4)
-                    {
-                        log("No longer waiting");
                         findProgress();
                         findHeat();
-                        if (interactingSecond == false)
+                        while(!myPosition().equals(grindStone))
                         {
-                            if (!interactingSecond)
-                            {
-                                log("interact with hammer");
-                                objects.closest("Trip hammer").interact("Use");
-                                interactingSecond = true;
-                            }
+                            log("Walking to grindStone");
+                            walking.walk(objects.closest("Grindstone"));
                         }
-                        log("Waiting for heat to be outside of red");
+                        if (!interactingSecond)
+                        {
+                            log("interact with grindstone");
+                            objects.closest("Grindstone").interact("Use");
+                            interactingSecond = true;
+                        }
+                        log("Waiting for heat to be outside of yellow");
                         sleep(random(100,250));
                     }
                     interactingSecond = false;
+
                 }
                 else if (progFourColor.equals(green)) //should be working
                 {
@@ -441,6 +451,7 @@ public final class GiantsFoundryNew extends Script
                     }
                     interactingSecond = false;
                 }
+            }
 
             else if (progress == 5)
             {
@@ -533,7 +544,7 @@ public final class GiantsFoundryNew extends Script
             log("No Sword progress need to make sword");
             progress = 0;
         }
-    }
+    } //do not touch this code this is good
 
     public void findHeat() throws InterruptedException
     {
@@ -552,12 +563,12 @@ public final class GiantsFoundryNew extends Script
         log("arrow is here x: " + (rectHeat.x+rectHeat.width/2));
         //log("LAST VALUE" + (rectThree.x+rectThree.width));
 
-        if (rectHeat.x+(rectHeat.width/2) > 65 && rectHeat.x+(rectHeat.width/2) <= rectOne.x+rectOne.width)
+        if (rectHeat.x+(rectHeat.width/2) > 68 && rectHeat.x+(rectHeat.width/2) <= rectOne.x+rectOne.width)
         {
             log("Progress is within COLD box");
             currentHeat = 2;
         }
-        else if (rectHeat.x+(rectHeat.width/2) > rectTwo.x && rectHeat.x+(rectHeat.width/2) < (rectTwo.x+rectTwo.width-3))
+        else if (rectHeat.x+(rectHeat.width/2) > rectTwo.x && rectHeat.x+(rectHeat.width/2) < (rectTwo.x+rectTwo.width-5))
         {
             log("Progress is within WARM box");
             currentHeat = 4;
@@ -593,6 +604,69 @@ public final class GiantsFoundryNew extends Script
         }
     }
 
+    public void smithGreen(int currentProgress) throws InterruptedException {
+        while (greenDescending < arrowPosition) // if heat is low heat it up
+        {
+            findHeat();
+            while (!waterFall2.contains(myPosition()))
+            {
+                log("Walking to waterfall");
+                walking.walk(objects.closest("Waterfall"));
+                sleep(random(400,600));
+            }
+            if (interactingFirst == false)
+            {
+                log("Interacting with Waterfall");
+                objects.closest("Waterfall").interact("Cool-preform");
+                interactingFirst = true;
+            }
+            sleep(random(100,200));
+            log("End of green descending < arrowPosition loop");
+        }
+        interactingFirst = false;
+        if (!polishingWheel.equals(myPosition()))
+        {
+            log("Walking to Polishing wheel");
+            walking.walk(objects.closest("Polishing wheel"));
+            findHeat();
+        }
+        while(arrowPosition < greenAscending)
+        {
+            findHeat();
+            if(!interactingFirst)
+            {
+                walking.walk(objects.closest("Lava pool"));
+                sleep(random(250, 400));
+                objects.closest("Lava pool").interact("Heat-preform");
+                interactingFirst = true;
+            }
+        }
+        interactingFirst = false;
+        while (currentHeat == 2 && progress == currentProgress)
+        {
+            log("No longer waiting");
+            findProgress();
+            findHeat();
+            if (!polishingWheel.equals(myPosition()))
+            {
+                log("Walking to Polishing wheel");
+                walking.walk(objects.closest("Polishing wheel"));
+                findHeat();
+            }
+            if (interactingSecond == false)
+            {
+                if (!interactingSecond)
+                {
+                    log("interact with Polishing wheel");
+                    objects.closest("Polishing wheel").interact("Use");
+                    interactingSecond = true;
+                }
+            }
+            log("Waiting for heat to be outside of green");
+            sleep(random(100,250));
+        }
+        interactingSecond = false;
+    }
 
 }
 class Sleep5 extends ConditionalSleep
