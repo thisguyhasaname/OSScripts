@@ -10,6 +10,10 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import java.awt.*;
 import java.util.function.BooleanSupplier;
 
+/* I NEED TO ADD THE ABILITY TO USE EXTRA MOLDS AS OF NOW
+THIS SCRIPT WILL ONLY USE THE BASE MOULDS AND IS MOSTLY ONLY
+USED FOR GETTING THE CANNONBALL MOULD ASAP.
+ */
 @ScriptManifest(name = "Giants Foundry New", author = "Iownreality1", info = "Does Giants Foundry", version = 1.0, logo = "")
 public final class GiantsFoundryNew extends Script
 {
@@ -40,13 +44,14 @@ public final class GiantsFoundryNew extends Script
     Position waterFall = new Position(3360,11489,0);
     Area waterFall2 = new Area(3360,11489,3361, 11489);
     Position polishingWheel = new Position(3365, 11485, 0);
-    int greenDescending = 217;
+    int greenDescending = 204;
     int greenBot = 70;
     int greenTop = 157;
     int greenAscending = 68;
-    int yellowDescending = 240;
+    int yellowDescending = 250;
     int yellowTop = 330;
-    int yellowAscending = 208;
+    int yellowBot = 231;
+    int yellowAscending = 215;
     int redDescending = 390;
     int redAscending = 450;
     int arrowPosition;
@@ -414,11 +419,6 @@ public final class GiantsFoundryNew extends Script
         }
         log("End of arrowPosition > YellowDescending loop");
         interactingFirst = false;
-        if (!polishingWheel.equals(myPosition()))
-        {
-            log("Walking to Polishing wheel");
-            walking.walk(objects.closest("Polishing wheel"));
-        }
         if (greenAscending > arrowPosition)
         {
             while(greenTop > arrowPosition) //heat back up until almost full of green
@@ -438,8 +438,14 @@ public final class GiantsFoundryNew extends Script
                 sleep(random(100,250));
             }
         }
+        interactingFirst = false;
         while (greenBot < arrowPosition && progress == currentProgress)
         {
+            if (!polishingWheel.equals(myPosition()))
+            {
+                log("Walking to Polishing wheel");
+                walking.walk(objects.closest("Polishing wheel"));
+            }
             //log("No longer waiting");
             if (interactingSecond == false)
             {
@@ -453,6 +459,7 @@ public final class GiantsFoundryNew extends Script
             log("Waiting for heat to be outside of green");
             sleep(random(100,250));
         }
+        walking.walk(lavaPool);
         interactingSecond = false;
     }
 
@@ -469,6 +476,7 @@ public final class GiantsFoundryNew extends Script
             if (interactingFirst == false)
             {
                 log("Interacting with lava pool");
+                sleep(600);
                 objects.closest("Lava pool").interact("Heat-preform");
                 interactingFirst = true;
             }
@@ -507,7 +515,7 @@ public final class GiantsFoundryNew extends Script
 
     public void smithYellow(int currentProgress) throws InterruptedException
     {
-        while (arrowPosition > yellowDescending) // if heat is too high lower it
+        while (arrowPosition > yellowDescending) // yellow descending is the left end of yellow. will be at the low end after this.
         {
             while (!waterFall2.contains(myPosition()))
             {
@@ -525,11 +533,6 @@ public final class GiantsFoundryNew extends Script
         }
         log("End of arrowPosition > YellowDescending loop");
         interactingFirst = false;
-        if (!grindStone.equals(myPosition()))
-        {
-            log("Walking to Grindstone");
-            walking.walk(objects.closest("Grindstone"));
-        }
         while(yellowAscending > arrowPosition)
         {
             while (!lavaPool.contains(myPosition()))
@@ -545,9 +548,16 @@ public final class GiantsFoundryNew extends Script
                 interactingFirst = true;
             }
             sleep(random(100,250));
+
         }
-        while (yellowTop > arrowPosition && progress == currentProgress)
+        interactingFirst = false;
+        while (yellowTop > arrowPosition && progress == currentProgress && yellowBot < arrowPosition)
         {
+            if (!grindStone.equals(myPosition()))
+            {
+                log("Walking to Grindstone");
+                walking.walk(objects.closest("Grindstone"));
+            }
             //log("No longer waiting");
             if (interactingSecond == false)
             {
@@ -561,6 +571,7 @@ public final class GiantsFoundryNew extends Script
             log("Waiting for heat to be outside of yellow");
             sleep(random(100,250));
         }
+        walking.walk(waterFall2);
         interactingSecond = false;
     }
 }
