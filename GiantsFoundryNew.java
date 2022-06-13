@@ -5,6 +5,7 @@ import org.osbot.rs07.accessor.XRS2Widget;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.ui.RS2Widget;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.input.mouse.MainScreenTileDestination;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
@@ -14,6 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import org.osbot.rs07.canvas.paint.Painter;
 
 /* I NEED TO ADD THE ABILITY TO USE EXTRA MOLDS AS OF NOW
 THIS SCRIPT WILL ONLY USE THE BASE MOULDS AND IS MOSTLY ONLY
@@ -68,38 +70,6 @@ public final class GiantsFoundryNew extends Script{
     int redAscending = 450;
     int redBot = 362;
     int arrowPosition;
-    Thread thread1 = new Thread(() -> {
-        while (getBot().getScriptExecutor().isRunning() && !getBot().getScriptExecutor().isPaused() && !getBot().getScriptExecutor().isSuspended()) {
-            try
-            {
-                log("Thread is working");
-                findHeat();
-                log("Found heat");
-            }
-            catch (InterruptedException e) {
-            }
-            try
-            {
-                findProgress();
-                log("found progress");
-                /*
-                log("CURRENT PROGRESS FROM THREAD: " + progress);
-                log("Current HEAT FROM THREAD: " + currentHeat);
-                log("CURRENT ARROW POS FROM THREAD " + arrowPosition );
-
-                 */
-            }
-            catch (InterruptedException e)
-            {
-            }
-            try {
-                Thread.sleep(300);
-            }
-            catch (InterruptedException e) {
-
-            }
-        }
-    });
     List<String> fortes = new ArrayList<String>();
     List<String> blades = new ArrayList<String>();
     List<String> tips = new ArrayList<String>();
@@ -116,11 +86,57 @@ public final class GiantsFoundryNew extends Script{
     int bar = 0;
     String bar1 = "Steel bar";
     String bar2 = "Iron bar";
+    private long startTime;
+    private String runningTime;
+    private int repGained;
+    private int repStart;
 
+    Thread thread1 = new Thread(() -> {
+        while (getBot().getScriptExecutor().isRunning() && !getBot().getScriptExecutor().isPaused() && !getBot().getScriptExecutor().isSuspended()) {
+            try
+            {
+                findHeat();
+            }
+            catch (InterruptedException e) {
+            }
+            try
+            {
+                findProgress();
+            }
+            catch (InterruptedException e)
+            {
+            }
+            runningTime = formatTime(System.currentTimeMillis()-startTime);
+            repGained = configs.get(3436)-repStart;
+            try {
+                Thread.sleep(300);
+            }
+            catch (InterruptedException e) {
+
+            }
+        }
+    });
+
+    @Override
+    public void onPaint(final Graphics2D g)
+    {
+        Graphics2D gr = g;
+        Font font = new Font("Open Sans", Font.BOLD, 18);
+        g.setFont(font);
+        g.setColor(Color.green);
+        g.drawString("Running Time: " + runningTime,10,250);
+        g.drawString("Smithing xp Gained: " + formatValue(getExperienceTracker().getGainedXP(Skill.SMITHING)),10,270);
+        g.drawString("Smithing xp/hr: " + formatValue(getExperienceTracker().getGainedXPPerHour(Skill.SMITHING)),10,290);
+        g.drawString("Reputation Gained: " + formatValue(repGained),10,310);
+        g.drawString("Current reputation: " + (repGained+repStart),10,330 );
+    }
 
 
     @Override
     public final void onStart() throws InterruptedException {
+        startTime = System.currentTimeMillis();
+        getExperienceTracker().start(Skill.SMITHING);
+        repStart = configs.get(3436);
         thread1.start();
         fortes.add("Chopper Forte");
         fortes.add("Disarming Forte");
@@ -679,6 +695,10 @@ public final class GiantsFoundryNew extends Script{
                     Open = false;
                 }
             }
+            tipSet = false;
+            bladeSet = false;
+            forteSet = false;
+            Open = false;
             reqOneString = "";
             reqTwoString = "";
             while (!inventory.contains("Bucket of water"))
@@ -770,6 +790,22 @@ public final class GiantsFoundryNew extends Script{
     @Override
     public final void onExit() {
         thread1.stop();
+    }
+
+    public final String formatValue(final long l) {
+        return (l > 1_000_000) ? String.format("%.2fm", ((double) l / 1_000_000))
+                : (l > 1000) ? String.format("%.1fk", ((double) l / 1000))
+                : l + "";
+    }
+    public final String formatValue(final int l) {
+        return (l > 1_000_000) ? String.format("%.2fm", ((double) l / 1_000_000))
+                : (l > 1000) ? String.format("%.1fk", ((double) l / 1000))
+                : l + "";
+    }
+    public final String formatTime(final long ms){
+        long s = ms / 1000, m = s / 60, h = m / 60;
+        s %= 60; m %= 60; h %= 24;
+        return String.format("%02d:%02d:%02d", h, m, s);
     }
 
     public void setWidgets() {
