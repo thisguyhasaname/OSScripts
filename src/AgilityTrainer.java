@@ -1,17 +1,12 @@
 import Util.FormattingForPaint;
-import Util.MarkOfGrace;
 import Util.Sleep;
-import org.osbot.rs07.api.GroundItems;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.GroundItem;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
-import org.osbot.rs07.utility.ConditionalSleep;
-
 import java.awt.*;
-import java.util.function.BooleanSupplier;
 
 import static org.osbot.rs07.script.MethodProvider.random;
 
@@ -243,45 +238,42 @@ public class AgilityTrainer extends  Script{
         }
         if (firstObstacle.contains(myPosition()))
         {
-            MarkOfGrace.pickUpMark(firstObstacle);
-            groundItem = getGroundItems().closest(e -> e != null && e.getName().contains("Mark of grace"));
-            if(groundItem != null) {
-                itemPosition = groundItem.getPosition();
-                if (firstObstacle.contains(itemPosition))
-                {
-                    groundItem.interact("Take");
-                }
-            }
+            pickUpMark(firstObstacle);
             log("walking to Tightrope");
             objects.closest("Tightrope").interact("Cross");
             Sleep.sleepUntil(() -> secondObstacle.contains(myPosition()), 10000);
         }
         if (secondObstacle.contains(myPosition()))
         {
+            pickUpMark(secondObstacle);
             log("walking to Tightrope");
             objects.closest("Tightrope").interact("Cross");
             Sleep.sleepUntil(() -> thirdObstacle.contains(myPosition()), 10000);
         }
         if (thirdObstacle.contains(myPosition()))
         {
+            pickUpMark(thirdObstacle);
             log("walking to Narrow wall");
             objects.closest("Narrow wall").interact("Balance");
             Sleep.sleepUntil(() -> fourthObstacle.contains(myPosition()), 10000);
         }
         if (fourthObstacle.contains(myPosition()))
         {
+            pickUpMark(fourthObstacle);
             log("walking to Wall");
             objects.closest("Wall").interact("Jump-up");
             Sleep.sleepUntil(() -> fifthObstacle.contains(myPosition()), 10000);
         }
         if (fifthObstacle.contains(myPosition()))
         {
+            pickUpMark(fifthObstacle);
             log("walking to Gap");
             objects.closest("Gap").interact("Jump");
             Sleep.sleepUntil(() -> sixthObstacle.contains(myPosition()), 10000);
         }
         if (sixthObstacle.contains(myPosition()))
         {
+            pickUpMark(sixthObstacle);
             log("walking to Crate");
             objects.closest("Crate").interact("Climb-down");
             Sleep.sleepUntil(() -> endOfDraynor.contains(myPosition()), 10000);
@@ -297,12 +289,20 @@ public class AgilityTrainer extends  Script{
             Sleep.sleepUntil(() -> startDraynor.contains(myPosition()), 10000);
         }
 
-
-
-
-
+    }
+    public void pickUpMark(Area currentArea)
+    {
+        groundItem = getGroundItems().closest(e -> e != null && e.getName().contains("Mark of grace"));
+        if(groundItem != null) {
+            itemPosition = groundItem.getPosition();
+            if (currentArea.contains(itemPosition))
+            {
+                groundItem.interact("Take");
+            }
+        }
     }
     public void PriestQuest() {
 
     }
 }
+
